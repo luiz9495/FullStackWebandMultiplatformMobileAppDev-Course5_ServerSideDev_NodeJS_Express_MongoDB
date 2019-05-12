@@ -45,38 +45,21 @@ app.use(session({
   store: new FileStore()
 }));
 
+app.use('/', indexRouter);
+app.use('/users', usersRouter);
+
 // From this step: go through authorization phase before Middleware can be accessed (with signed cookies to store auth)
 function auth (req, res, next) {
   console.log(req.session);
 
   if (!req.session.user) {
-    var authHeader = req.headers.authorization;
-    if (!authHeader) {
-      var err = new Error('You are not authenticated!');
-      res.setHeader('WWW-Authenticate', 'Basic');
-      err.status = 401;
-      next(err);
-      return;
-    }
-
-    var auth = new Buffer.from(authHeader.split(' ')[1], 'base64').toString().split(':');
-    var user = auth[0];
-    var pass = auth[1];
-    if (user == 'admin' && pass == 'password') { // authorized
-//      res.cookie('user', 'admin', { signed: true }); // create signed cookie that stores auth info
-      req.session.user = 'admin'; // saves the user info into the session data
-      next();
-    }
-    else {
-      var err = new Error('You are not authenticated!');
-      res.setHeader('WWW-Authenticate', 'Basic');
-      err.status = 401;
-      next(err);
-    }
+    var err = new Error('You are not authenticated!');
+    res.setHeader('WWW-Authenticate', 'Basic');
+    err.status = 401;
+    next(err);
   }
   else {
-    if (req.session.user === 'admin') {
-      console.log('req.session: ',req.session);
+    if (req.session.user === 'authenticated') {
       next();
     }
     else {
@@ -93,8 +76,6 @@ app.use(auth);
 
 app.use(express.static(path.join(__dirname, 'public')));
 
-app.use('/', indexRouter);
-app.use('/users', usersRouter);
 app.use('/dishes',dishRouter);
 app.use('/promotions',promoRouter);
 app.use('/leaders',leaderRouter);
