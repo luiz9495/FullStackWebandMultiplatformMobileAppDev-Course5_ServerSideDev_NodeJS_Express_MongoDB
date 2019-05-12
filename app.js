@@ -32,32 +32,48 @@ app.set('view engine', 'jade');
 app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
-app.use(cookieParser());
+app.use(cookieParser('12345-67890-09876-54321')); // use signed cookies
 
-// From this setep: go through authorization phase before Middleware can be accessed
+// From this step: go through authorization phase before Middleware can be accessed (with signed cookies to store auth)
 function auth (req, res, next) {
-  console.log(req.headers);
-  var authHeader = req.headers.authorization;
-  if (!authHeader) {
+  console.log(req.signedCookies);
+
+  if (!req.signedCookies.user) {
+    var authHeader = req.headers.authorization;
+    if (!authHeader) {
       var err = new Error('You are not authenticated!');
       res.setHeader('WWW-Authenticate', 'Basic');
       err.status = 401;
       next(err);
       return;
-  }
+    }
 
-  var auth = new Buffer.from(authHeader.split(' ')[1], 'base64').toString().split(':');
-  var user = auth[0];
-  var pass = auth[1];
-  if (user == 'admin' && pass == 'password') {
-      next(); // authorized
-  } else {
+    var auth = new Buffer.from(authHeader.split(' ')[1], 'base64').toString().split(':');
+    var user = auth[0];
+    var pass = auth[1];
+    if (user == 'admin' && pass == 'password') { // authorized
+      res.cookie('user', 'admin', { signed: true }); // create signed cookie that stores auth info
+      next();
+    }
+    else {
       var err = new Error('You are not authenticated!');
       res.setHeader('WWW-Authenticate', 'Basic');
       err.status = 401;
       next(err);
+    }
+  }
+  else {
+    if (req.signedCookies.user === 'admin') {
+        next();
+    }
+    else {
+        var err = new Error('You are not authenticated!');
+        err.status = 401;
+        next(err);
+    }
   }
 }
+// end Auth + Cookies
 
 app.use(auth);
 //
