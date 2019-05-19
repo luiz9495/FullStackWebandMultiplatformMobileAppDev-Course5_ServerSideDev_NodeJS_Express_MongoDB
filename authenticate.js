@@ -40,9 +40,10 @@ exports.jwtPassport = passport.use(new JwtStrategy(opts,
 
 exports.verifyUser = passport.authenticate('jwt', {session: false});
 
-exports.verifyAdmin = (admin, next) => {
-  if (admin === true) {
-    console.log('This user is admin: ' + admin);
+exports.verifyAdmin = (req, res, next) => {
+//  if (req.user.admin) {
+  if (req.user.admin == true) { // bug not recognizing admin field: req.user.admin
+    console.log('This user is admin: ' + req.user.admin);
     return next();
   }
   else {
