@@ -36,9 +36,15 @@ favoriteRouter.route('/')
         });
         favorite.save()
           .then((favorite) => {
-            res.statusCode = 200;
-            res.setHeader('Content-Type', 'application/json');
-            res.json(favorite);
+            Favorites.findById(favorite._id)
+            .populate('user')
+            .populate('dishes')
+            .then((favorite) => {
+              res.statusCode = 200;
+              res.setHeader('Content-Type', 'application/json');
+              res.json(favorite);
+            }, (err) => next(err))
+            .catch((err) => next(err));
           }, (err) => next(err))
           .catch((err) => next(err));
       }
@@ -46,9 +52,15 @@ favoriteRouter.route('/')
         Favorites.create({user: req.user._id, dishes: req.body})
         .then((favorite) => {
           console.log('Favorites Created: ', req.body);
-          res.statusCode = 200;
-          res.setHeader('Content-Type', 'application/json');
-          res.json(favorite);
+          Favorites.findById(favorite._id)
+          .populate('user')
+          .populate('dishes')
+          .then((favorite) => {
+            res.statusCode = 200;
+            res.setHeader('Content-Type', 'application/json');
+            res.json(favorite);
+          }, (err) => next(err))
+          .catch((err) => next(err));
         }, (err) => next(err))
         .catch((err) => next(err));
       }
@@ -108,9 +120,15 @@ favoriteRouter.route('/:dishId')
               favorite.dishes.push(req.params.dishId);
               favorite.save()
                 .then((favorite) => {
-                  res.statusCode = 200;
-                  res.setHeader('Content-Type', 'application/json');
-                  res.json(favorite);
+                  Favorites.findById(favorite._id)
+                  .populate('user')
+                  .populate('dishes')
+                  .then((favorite) => {
+                    res.statusCode = 200;
+                    res.setHeader('Content-Type', 'application/json');
+                    res.json(favorite);
+                  }, (err) => next(err))
+                  .catch((err) => next(err));
                 }, (err) => next(err))
                 .catch((err) => next(err));
               }
@@ -119,9 +137,15 @@ favoriteRouter.route('/:dishId')
             Favorites.create({user: req.user._id, dishes: [req.params.dishId]})
             .then((favorite) => {
               console.log('Favorites Created: ', req.params.dishId);
-              res.statusCode = 200;
-              res.setHeader('Content-Type', 'application/json');
-              res.json(favorite);
+              Favorites.findById(favorite._id)
+              .populate('user')
+              .populate('dishes')
+              .then((favorite) => {
+                res.statusCode = 200;
+                res.setHeader('Content-Type', 'application/json');
+                res.json(favorite);
+              }, (err) => next(err))
+              .catch((err) => next(err));
             }, (err) => next(err))
             .catch((err) => next(err));
           }
@@ -143,10 +167,16 @@ favoriteRouter.route('/:dishId')
             console.log('dish deleted from favorites: ', req.params.dishId);
             favorite.dishes.splice(index, 1);
             favorite.save()
-            .then((resp) => {
+            .then((favorite) => {
+              Favorites.findById(favorite._id)
+              .populate('user')
+              .populate('dishes')
+              .then((favorite) => {
                 res.statusCode = 200;
                 res.setHeader('Content-Type', 'application/json');
-                res.json(resp);
+                res.json(favorite);
+              }, (err) => next(err))
+              .catch((err) => next(err));
             }, (err) => next(err))
             .catch((err) => next(err));
           }
